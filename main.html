@@ -1,0 +1,60 @@
+"<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clothing Store</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header .logo { font-size: 24px; color: #ff4081; width: 50px; height: auto; }
+        header .logo img { max-width: 100%; height: auto; }
+        header nav ul { list-style: none; padding: 0; margin: 0; display: flex; }
+        header nav ul li { margin: 0 15px; }
+        header nav ul li a { text-decoration: none; color: #333; }
+        header .search-bar { flex-grow: 1; margin: 0 20px; }
+        header .search-bar input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        header .profile-wishlist a { margin-left: 20px; text-decoration: none; color: #333; }
+        main { padding: 20px; }
+        .subheading { font-size: 24px; margin-bottom: 20px; }
+        .top-seller-container { display: flex; flex-direction: row; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .top-seller-container img { width: 200px; height: auto; }
+        .top-seller-container .details { text-align: left; }
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-left: 120px; }
+        .product { border: 1px solid #ddd; border-radius: 4px; padding: 20px; text-align: center; }
+        .product img { max-width: 100%; height: 250px; border-bottom: 1px solid #ddd; margin-bottom: 10px; }
+        .product h2 { font-size: 16px; margin: 10px 0; }
+        .product p { font-size: 14px; color: #555; }
+        .original-price { text-decoration: line-through; color: #999; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo"><img src="{{ url_for('static', filename='myntra.jpeg') }}" alt="Myntra"></div>
+        <nav>
+            <ul>
+                <li><a href="#">Men</a></li>
+                <li><a href="#">Women</a></li>
+                <li><a href="#">Kids</a></li>
+                <li><a href="#">Home & Living</a></li>
+                <li><a href="#">Beauty</a></li>
+                <li><a href="#">Studio</a></li>
+            </ul>
+        </nav>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for products, brands and more">
+        </div>
+        <div class="profile-wishlist">
+            <a href="#">Profile</a>
+            <a href="#">Wishlist</a>
+            <a href="color_analysis" class="color-analysis">Color Analysis</a>
+        </div>
+    </header>
+
+    <main>
+        <div>
+            <img src="{{ url_for('static', filename='store.jpeg') }}" alt="Store">
+        </div>
+    </main>
+</body>
+</html>"

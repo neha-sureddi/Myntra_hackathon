@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Analysis</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            position: relative;
+            width: 500px;
+            height: 500px;
+        }
+        #pointer {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            pointer-events: none;
+            z-index: 10;
+            display: none;
+        }
+        .color-grid {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
+        }
+        .color-label {
+            text-align: center;
+            margin-top: 5px;
+        }
+        .palette {
+            margin-top: 20px;
+        }
+        .palette h3 {
+            margin-bottom: 10px;
+        }
+        .palette .color-box {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Color Analysis for Dress Recommendation</h1>
+    <input type="file" id="fileInput">
+    <br>
+    <div style="position: relative;">
+        <canvas id="canvas" width="500" height="500"></canvas>
+        <div id="pointer"></div>
+    </div>
+    <div class="color-grid">
+        <div>
+            <div id="skinColor" class="color-box"></div>
+            <div class="color-label">Skin</div>
+        </div>
+        <div>
+            <div id="hairColor" class="color-box"></div>
+            <div class="color-label">Hair</div>
+        </div>
+        <div>
+            <div id="eyeColor" class="color-box"></div>
+            <div class="color-label">Eye</div>
+        </div>
+    </div>
+    <button id="analyzeButton">Analyze Colors</button>
+    <div class="palette" id="suggestedPalette">
+        <h3>Suitable Colors</h3>
+    </div>
+    <div class="palette" id="avoidPalette">
+        <h3>Colors to Avoid</h3>
+    </div>
+    <div style="margin-top: 20px;">
+        <a href="/top_10" id="exploreOptions">Explore Personalized Options</a>
+    </div>
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let points = [];
+        let imageData;
+
+        let pointer = document.getElementById('pointer');
+        let skinColor = document.getElementById('skinColor');
+        let hairColor = document.getElementById('hairColor');
+        let eyeColor = document.getElementById('eyeColor');
+
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+            let file = event.target.files[0];
+            let formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                let img = new Image();
+                img.onload = function() {
+                    let canvasAspectRatio = canvas.width / canvas.height;
+                    let imgAspectRatio = img.width / img.height;
+                    let newWidth, newHeight, offsetX, offsetY;
+
+                    if (imgAspectRatio > canvasAspectRatio) {
+                        newWidth = canvas.width;
+                        newHeight = newWidth / imgAspectRatio;
+                        offsetX = 0;
+                        offsetY = (canvas.height - newHeight) / 2;
+                    } else {
+                        newHeight = canvas.height;
+                        newWidth = newHeight * imgAspectRatio;
+                        offsetX = (canvas.width - newWidth) / 2;
+                        offsetY = 0;
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, offsetX, offsetY, newWidth, newHeight);
+                    imageData = data.image;
+                }
+                img.src = 'data:image/png;base64,' + data.image;
+            });
+        });
+
+        canvas.addEventListener('mousemove', (event) => {
+            let rect = canvas.getBoundingClientRect();
+            let x = event.clientX - rect.left;
+            let y = event.clientY - rect.top;
+            let pixel = ctx.getImageData(x, y, 1, 1).data;
+            let color = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+
+            if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+                pointer.style.display = 'block';
+                pointer.style.left = (x - pointer.offsetWidth / 2) + 'px';
+                pointer.style.top = (y - pointer.offsetHeight / 2) + 'px';
+                pointer.style.backgroundColor = color;
+            } else {
+                pointer.style.display = 'none';
+            }
+        });
+
+        canvas.addEventListener('mouseout', () => {
+            pointer.style.display = 'none';
+        });
+
+        canvas.addEventListener('click', (event) => {
+            let rect = canvas.getBoundingClientRect();
+            let x = event.clientX - rect.left;
+            let y = event.clientY - rect.top;
+            let pixel = ctx.getImageData(x, y, 1, 1).data;
+            let color = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+
+            if (points.length < 3) {
+                points.push([Math.floor(x), Math.floor(y)]);
+                if (points.length === 1) {
+                    skinColor.style.backgroundColor = color;
+                } else if (points.length === 2) {
+                    hairColor.style.backgroundColor = color;
+                } else if (points.length === 3) {
+                    eyeColor.style.backgroundColor = color;
+                }
+            }
+        });
+
+        document.getElementById('analyzeButton').addEventListener('click', () => {
+            if (points.length === 3) {
+                fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        points: points,
+                        image: imageData
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayPalette('suggestedPalette', data.suitable_colors);
+                    displayPalette('avoidPalette', data.colors_to_avoid);
+                });
+            } else {
+                alert('Please select three points on the image.');
+            }
+        });
+
+        function displayPalette(elementId, colors) {
+            let paletteElement = document.getElementById(elementId);
+            paletteElement.innerHTML = '<h3>' + (elementId === 'suggestedPalette' ? 'Suitable Colors' : 'Colors to Avoid') + '</h3>';
+            colors.forEach(color => {
+                let colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.backgroundColor = color;
+                paletteElement.appendChild(colorBox);
+            });
+        }
+    </script>
+</body>
+</html>
