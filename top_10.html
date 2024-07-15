@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myntra Top 10</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #ffffff; 
+            color: rgb(7, 0, 0); 
+            text-align: center; 
+            padding: 20px; 
+        }
+        .title img { 
+            width: 300px; 
+        }
+        .title { 
+            font-size: 2.5em; 
+            font-family: 'Georgia', serif; 
+            margin-bottom: 10px; 
+        }
+        .container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 40px; 
+            justify-content: center; 
+        }
+        .item { 
+            margin: 10px; 
+            background-color: white; 
+            color: black; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            width: 200px; 
+            position: relative; /* Added position relative to position the number */
+        }
+        .item img { 
+            width: 100%; 
+            object-fit: contain; 
+            height: 270px; 
+        }
+        .item h2 { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            margin: 0;
+            padding-top: 191px; 
+            color: black; 
+            font-size: 5em; 
+            color: rgba(0, 0, 0, 0.8); 
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5); 
+            z-index: 2; 
+        }
+        .product-info { 
+            text-align: left; 
+            padding: 10px; 
+        }
+        ul { 
+            list-style: none; 
+            padding: 0; 
+        }
+        li { 
+            display: inline-block; 
+            margin: 10px; 
+            vertical-align: top; 
+            width: 220px; 
+            position: relative; /* Added position relative to position the number */
+        }
+        img { 
+            width: 100px; 
+            height: auto; 
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <img src="download.png" alt="Myntra Logo">
+        <div>WOMEN TOP 10</div>
+    </div>
+    <div class="container">
+        <ul>
+            {% for product in products %}
+                <li>
+                    <div class="item">
+                        <h2>{{ loop.index }}</h2>
+                        <a href="{{ url_for('product_detail', product_id=product['Product_ID']) }}">
+                            <img src="{{ product['img'] }}" alt="Item {{ loop.index }}">
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
